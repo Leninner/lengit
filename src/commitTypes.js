@@ -1,36 +1,36 @@
 export const COMMIT_TYPES = {
   feat: {
-    emoji: '✨',
+    emoji: '✨ ',
     description: 'A new feature',
     release: true
   },
   fix: {
-    emoji: '🐛',
+    emoji: '🐛 ',
     description: 'A bug fix',
     release: true
   },
   perf: {
-    emoji: '⚡️',
+    emoji: '⚡️ ',
     description: 'A code change that improves performance',
     release: true
   },
   docs: {
-    emoji: '📚',
+    emoji: '📚 ',
     description: 'Documentation only changes',
     release: false
   },
   refactor: {
-    emoji: '♻️',
+    emoji: '♻️  ',
     description: 'A code change that neither fixes a bug nor adds a feature',
     release: false
   },
   test: {
-    emoji: '🏁',
+    emoji: '🏁 ',
     description: 'Adding missing tests or correcting existing tests',
     release: false
   },
   build: {
-    emoji: '👷',
+    emoji: '👷 ',
     description: 'Changes that affect the build system or external dependencies',
     release: false
   }
