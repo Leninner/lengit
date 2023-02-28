@@ -20,23 +20,33 @@ console.log('changedFiles', changedFiles.length)
 console.log('stagedFiles', stagedFiles.length)
 
 if (stagedFiles.length === 0 && changedFiles.length > 0) {
-  const files = await multiselect({
-    message: `${colors.cyan('No tienes nada preparado para hacer commit. Selecciona los archivos que quieres añadir al commit')}`,
+  const shouldMultiSelect = await select({
+    message: `${colors.cyan('No tienes nada preparado para hacer commit. ¿Qué quieres hacer?')}`,
     options: [
       {
-        value: 'all',
-        label: 'Añadir todos los archivos'
+        value: 'add',
+        label: 'Añadir todos los archivos al commit'
       },
-      ...changedFiles.map((file) => ({
-        value: file,
-        label: file
-      }))
+      {
+        value: 'select',
+        label: 'Seleccionar los archivos que quieres añadir al commit'
+      }
     ]
   })
 
-  if (files.includes('all')) {
+  if (shouldMultiSelect === 'add') {
     await gitAdd()
   } else {
+    const files = await multiselect({
+      message: `${colors.cyan('No tienes nada preparado para hacer commit. Selecciona los archivos que quieres añadir al commit')}`,
+      options: [
+        ...changedFiles.map((file) => ({
+          value: file,
+          label: file
+        }))
+      ]
+    })
+
     await gitAdd(files)
   }
 }
