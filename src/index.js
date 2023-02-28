@@ -2,7 +2,7 @@ import { intro, outro, text, select, confirm, multiselect } from '@clack/prompts
 import { COMMIT_TYPES } from './commitTypes.js'
 import colors from 'picocolors'
 import { trytm } from '@bdsqqq/try'
-import { getChangeFiles, getStagedFiles, gitAdd, gitCommit } from './git.js'
+import { getChangeFiles, getStagedFiles, gitAdd, gitCommit, restoreStagedFiles } from './git.js'
 
 intro(
   `Asistente para creación de commits por ${colors.cyan(' @leninner ')}`
@@ -22,13 +22,23 @@ console.log('stagedFiles', stagedFiles.length)
 if (stagedFiles.length === 0 && changedFiles.length > 0) {
   const files = await multiselect({
     message: `${colors.cyan('No tienes nada preparado para hacer commit. Selecciona los archivos que quieres añadir al commit')}`,
-    options: changedFiles.map((file) => ({
-      value: file,
-      label: file
-    }))
+    options: [
+      {
+        value: 'all',
+        label: 'Añadir todos los archivos'
+      },
+      ...changedFiles.map((file) => ({
+        value: file,
+        label: file
+      }))
+    ]
   })
 
-  await gitAdd(files)
+  if (files.includes('all')) {
+    await gitAdd()
+  } else {
+    await gitAdd(files)
+  }
 }
 
 const commitType = await select({
@@ -69,9 +79,9 @@ const shouldContinue = await confirm({
 
 if (!shouldContinue) {
   outro(colors.yellow('No se ha creado el commit'))
+  await restoreStagedFiles(changedFiles)
   process.exit(0)
 }
-
 const { stdout: commitResult } = await gitCommit(commit)
 
-outro('Commit creado con éxito. ¡Gracias por usar el asistente!')
+outro(colors.green('Commit creado con éxito. ¡Gracias por usar el asistente!'))

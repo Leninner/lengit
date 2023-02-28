@@ -23,9 +23,15 @@ export const gitCommit = async (commit) => {
   return cleanStdout(stdout)
 }
 
-export const gitAdd = async (file = []) => {
+export const gitAdd = async (file = ['.']) => {
   const filesLine = file.join(' ')
   const { stdout } = await execAsync(`git add ${filesLine}`)
+
+  return cleanStdout(stdout)
+}
+
+export const restoreStagedFiles = async (files) => {
+  const { stdout } = await execAsync(`git restore --staged ${files.join(' ')}`)
 
   return cleanStdout(stdout)
 }
