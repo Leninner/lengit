@@ -19,9 +19,20 @@ if (errorChangedFiles ?? errorStagedFiles) {
 console.log('changedFiles', changedFiles.length)
 console.log('stagedFiles', stagedFiles.length)
 
+if (changedFiles.length === 0 && stagedFiles.length === 0) {
+  outro(colors.yellow('No hay archivos para hacer commit'))
+  process.exit(1)
+}
+
 if (stagedFiles.length === 0 && changedFiles.length > 0) {
+  const possibleFiles = changedFiles.map((file) => `  ${colors.yellow(file)}`).join('\n\t')
+
   const shouldMultiSelect = await select({
-    message: `${colors.cyan('No tienes nada preparado para hacer commit. ¿Qué quieres hacer?')}`,
+    message: `${colors.cyan('Tienes los siguientes archivos con cambios que no están preparados para hacer commit')}
+
+      ${possibleFiles}
+
+    ${colors.cyan('¿Qué quieres hacer?')}`,
     options: [
       {
         value: 'add',
@@ -52,7 +63,7 @@ if (stagedFiles.length === 0 && changedFiles.length > 0) {
 }
 
 const commitType = await select({
-  message: colors.cyan('Selecciona el tipo de commit'),
+  message: colors.cyan('Selecciona el tipo de commit\n'),
   options: Object.entries(COMMIT_TYPES).map(([key, value]) => ({
     value: key,
     label: `${value.emoji} ${key.padEnd(8, ' ')} • ${value.description}`
