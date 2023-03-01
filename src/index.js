@@ -16,9 +16,6 @@ if (errorChangedFiles ?? errorStagedFiles) {
   process.exit(1)
 }
 
-console.log('changedFiles', changedFiles.length)
-console.log('stagedFiles', stagedFiles.length)
-
 if (changedFiles.length === 0 && stagedFiles.length === 0) {
   outro(colors.yellow('No hay archivos para hacer commit'))
   process.exit(1)
@@ -132,7 +129,7 @@ const shouldContinue = await confirm({
   
     ${colors.green(colors.bold(commit))}
 
-    ${colors.cyan('¿Confirmas?')}}`
+    ${colors.cyan('¿Confirmas el commit?')}`
 })
 
 if (!shouldContinue) {
