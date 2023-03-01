@@ -1,4 +1,4 @@
-import { intro, outro, text, select, confirm, multiselect } from '@clack/prompts'
+import { intro, outro, text, select, confirm, multiselect, isCancel } from '@clack/prompts'
 import { COMMIT_TYPES } from './commitTypes.js'
 import colors from 'picocolors'
 import { trytm } from '@bdsqqq/try'
@@ -25,12 +25,12 @@ if (changedFiles.length === 0 && stagedFiles.length === 0) {
 }
 
 if (stagedFiles.length === 0 && changedFiles.length > 0) {
-  const possibleFiles = changedFiles.map((file) => `  ${colors.yellow(file)}`).join('\n\t')
+  const possibleFiles = changedFiles.map((file) => `${colors.yellow(file)}`).join('\n\t')
 
   const shouldMultiSelect = await select({
     message: `${colors.cyan('Tienes los siguientes archivos con cambios que no están preparados para hacer commit')}
 
-      ${possibleFiles}
+        ${possibleFiles}
 
     ${colors.cyan('¿Qué quieres hacer?')}`,
     options: [
@@ -45,6 +45,11 @@ if (stagedFiles.length === 0 && changedFiles.length > 0) {
     ]
   })
 
+  if (isCancel(shouldMultiSelect)) {
+    outro(colors.yellow('No se ha hecho commit'))
+    process.exit(1)
+  }
+
   if (shouldMultiSelect === 'add') {
     await gitAdd()
   } else {
@@ -58,6 +63,11 @@ if (stagedFiles.length === 0 && changedFiles.length > 0) {
       ]
     })
 
+    if (isCancel(files)) {
+      outro(colors.yellow('No se ha hecho commit'))
+      process.exit(1)
+    }
+
     await gitAdd(files)
   }
 }
@@ -70,6 +80,12 @@ const commitType = await select({
   }))
 })
 
+if (isCancel(commitType)) {
+  await restoreStagedFiles(changedFiles)
+  outro(colors.yellow('No se ha hecho commit'))
+  process.exit(1)
+}
+
 const commitMessage = await text({
   message: 'Escribe el mensaje del commit',
   placeholder: 'Ejemplo: Añade un nuevo asistente para crear commits',
@@ -81,10 +97,14 @@ const commitMessage = await text({
     if (value.length > 50) {
       return colors.red('El mensaje del commit no puede tener más de 50 caracteres. No es una buena práctica escribir mensajes muy largos')
     }
-
-    return true
   }
 })
+
+if (isCancel(commitMessage)) {
+  await restoreStagedFiles(changedFiles)
+  outro(colors.yellow('No se ha hecho commit'))
+  process.exit(1)
+}
 
 const { emoji, release } = COMMIT_TYPES[commitType]
 
@@ -95,6 +115,12 @@ if (release) {
     message: `¿El commit incluye un cambio importante que influye un cambio anterior?
       ${colors.yellow('Si la respuesta es sí, deberías crear un commit con el tipo "BREAKING CHANGE" y al hacer release se creará una nueva versión major')}`
   })
+
+  if (isCancel(isBreakingChange)) {
+    await restoreStagedFiles(changedFiles)
+    outro(colors.yellow('No se ha hecho commit'))
+    process.exit(1)
+  }
 }
 
 let commit = `${emoji} ${commitType}: ${commitMessage}`
