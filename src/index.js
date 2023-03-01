@@ -72,7 +72,18 @@ const commitType = await select({
 
 const commitMessage = await text({
   message: 'Escribe el mensaje del commit',
-  placeholder: 'Ejemplo: Añade un nuevo asistente para crear commits'
+  placeholder: 'Ejemplo: Añade un nuevo asistente para crear commits',
+  validate: (value) => {
+    if (value.length === 0) {
+      return colors.red('El mensaje del commit no puede estar vacío')
+    }
+
+    if (value.length > 50) {
+      return colors.red('El mensaje del commit no puede tener más de 50 caracteres. No es una buena práctica escribir mensajes muy largos')
+    }
+
+    return true
+  }
 })
 
 const { emoji, release } = COMMIT_TYPES[commitType]
